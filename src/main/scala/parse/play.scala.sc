@@ -1,4 +1,5 @@
-import parse.{ExpressionRule, NumToken, OperatorToken}
+import shapeless.{ ::, HList, HNil }
+case class User(name: String)
 
-val tokens = Seq(NumToken(1), OperatorToken)
-ExpressionRule.parse(tokens)
+val demo: ::[Int, ::[String, ::[User, HNil]]] = 42 :: "Hello" :: User("Julien") :: HNil
+val x: ::[Int, ::[Int, ::[String, ::[User, HNil]]]] = 5 :: demo
