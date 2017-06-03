@@ -40,24 +40,16 @@ case class RuleOr(ruleLeft: Rule, ruleRight: Rule) extends Rule {
 }
 
 class RuleConcat[A <: HList, B <: HList](ruleLeft: Rule[A], ruleRight: => Rule[B])(implicit prepend : Prepend[A, B]) extends Rule[Prepend[A, B]#Out] {
-  type PrependType = Prepend[A, B]#Out
-  type MatchedType = Matched[PrependType]
-
-  override def parse[C <: HList](remaining: Matched[C]): RuleOutput[PrependType] = {
-    val a: RuleOutput[Prepend[C, A]#Out] = ruleLeft.parse(remaining)
-    val matches: Seq[MatchedType] = a.matches.foldLeft(Seq.empty[MatchedType]) { (accum, leftMatch) =>
-      val rightMatches: Seq[Matched[B]] = ruleRight.parse(leftMatch.remaining).matches
-      val mergeMatches = rightMatches.foldLeft(Seq.empty[MatchedType]) { (accum: Seq[MatchedType], rightMatch) =>
-        Matched(leftMatch.parsed ++ rightMatch.parsed, rightMatch.remaining) +: accum
-      }
-      accum ++ mergeMatches
-    }
-    RuleOutput(matches)
+  override def parse[C <: HList](remaining: Matched[C])(implicit prepend: Prepend[C,  Prepend[A, B]#Out]): RuleOutput[Prepend[C, Prepend[A, B]#Out]#Out] = {
+    val parsedleft: RuleOutput[Prepend[C, A]#Out] = ruleLeft.parse(remaining)
+    val parsedRight: RuleOutput[Prepend[HNil, B]#Out] = ruleRight.parse(parsedleft.matches.head.remaining)
+    val lol = parsedleft.matches.head.parsed ++ parsedRight.matches.head.parsed
+    parsedleft.matches.foldLeft(Seq.empty)
   }
 }
 
 sealed trait Rule[A <: HList] {
-  def parse[B <: HList](remaining: Matched[B]): RuleOutput[Prepend[B, A]#Out]
+  def parse[B <: HList](remaining: Matched[B])(implicit prepend : Prepend[B, A]): RuleOutput[Prepend[B, A]#Out]
   def parse(tokens: Seq[Token]): RuleOutput[Prepend[HNil, A]#Out] = parse(Matched[HNil](HNil, tokens))
 }
 
@@ -71,19 +63,22 @@ object Arithmetic {
   case class Num(num: Int) extends Expression
 
   object NumRule extends Rule[::[Num, HNil]] {
-    override def parse[B <: HList](remaining: Matched[B]): RuleOutput[Prepend[B, ::[Num, HNil]]#Out] = {
-      remaining.parsed
+     def parse[B <: HList](parseMe: Matched[B])(implicit prepend : Prepend[B, ::[Num , HNil]]): RuleOutput[Prepend[B, ::[Num , HNil]]#Out] = parseMe.remaining match {
+      case NumToken(x) +: tail =>
+        val z: Prepend[B, ::[Num , HNil]]#Out = parseMe.parsed ++ (Num(x) :: HNil)
+        RuleOutput(Seq(Matched(z, tail)))
+      case _ => RuleOutput(Seq.empty)
     }
   }
 
-  object OperatorRule extends Rule {
-    override def parse(matched: Matched): RuleOutput = matched.remaining match {
-      case OperatorToken :: tail => Matches(Matched(matched.parsed :+ Operator('+'), tail) :: Nil)
-      case _ => Unmatched
-    }
-  }
+//  object OperatorRule extends Rule {
+//    override def parse(matched: Matched): RuleOutput = matched.remaining match {
+//      case OperatorToken :: tail => Matches(Matched(matched.parsed :+ Operator('+'), tail) :: Nil)
+//      case _ => Unmatched
+//    }
+//  }
 
-  lazy val expressionRule: Rule = NumRule * OperatorRule * expressionRule > identity | NumRule
+  lazy val expressionRule: Rule = NumRule * expressionRule > identity | NumRule
 
 }
 
