@@ -1,94 +1,61 @@
 package parse
-import parse.Rule.ImplicitCat
-import shapeless.ops.hlist.Prepend
-import shapeless.{::, HList, HNil}
 
-sealed trait Token
+trait Token
 
-case class Matched[A <: HList](parsed: A, remaining: Seq[Token])
-case class RuleOutput[A <: HList](matches: Seq[Matched[A]]) {
-  def merge(ruleOutput: RuleOutput[A]): RuleOutput[A] = RuleOutput(matches ++ ruleOutput.matches)
-}
+case class Parsed[+A](parsed: A, remaining: Seq[Token])
 
-sealed trait Tree
-
-object Rule {
-  implicit class ImplicitCat[A](rule: Rule[A]) {
-    def *[B](concatMe: => Rule[B]): ImplicitCat[Prepend[A, B]#Out] = new RuleConcat(rule, concatMe)
-    def >[B](fun: A => B): Rule = CompletingRule(rule, fun)
-  }
-
-  implicit class ImplicitOr(rule: Rule) {
-    def |(orMe: Rule): Rule = RuleOr(rule, orMe)
-  }
-}
-
-case class CompletingRule[A <: HList, B <: HList](rule: Rule[A], fun: A => B) extends Rule {
-  override def parse(remaining: Matched): RuleOutput = {
-    val matches = rule.parse(remaining)
-
-    RuleOutput(matches.matches.map(m => Matched(fun(m.parsed), m.remaining)))
-    match {
-      case Matches(ms) =>
-      case Unmatched => Unmatched
+class RuleConcat1[A, B, C](left: Rule[A], right: => Rule[B], converter: (A, B) => C) extends Rule[C] {
+  override def parse[Z >: C](remaining: Seq[Token]): Seq[Parsed[Z]] = {
+    left.parse(remaining).foldLeft(Seq.empty[Parsed[C]]) { (accum, pl) =>
+      right.parse(pl.remaining).map { pr =>
+        Parsed(converter(pl.parsed, pr.parsed), pr.remaining)
+      }
     }
   }
 }
 
-case class RuleOr(ruleLeft: Rule, ruleRight: Rule) extends Rule {
-  override def parse(remaining: Matched): RuleOutput = ruleLeft.parse(remaining) merge ruleRight.parse(remaining)
-}
-
-class RuleConcat[A <: HList, B <: HList](ruleLeft: Rule[A], ruleRight: => Rule[B])(implicit prepend : Prepend[A, B]) extends Rule[Prepend[A, B]#Out] {
-  override def parse[C <: HList](remaining: Matched[C])(implicit prepend: Prepend[C,  Prepend[A, B]#Out]): RuleOutput[Prepend[C, Prepend[A, B]#Out]#Out] = {
-    val parsedleft: RuleOutput[Prepend[C, A]#Out] = ruleLeft.parse(remaining)
-    val parsedRight: RuleOutput[Prepend[HNil, B]#Out] = ruleRight.parse(parsedleft.matches.head.remaining)
-    val lol = parsedleft.matches.head.parsed ++ parsedRight.matches.head.parsed
-    parsedleft.matches.foldLeft(Seq.empty)
+class Concat1[A, B](left: Rule[A], right: => Rule[B]) {
+  def >[C](converter: (A, B) => C) = {
+    new RuleConcat1(left, right, converter)
   }
 }
 
-sealed trait Rule[A <: HList] {
-  def parse[B <: HList](remaining: Matched[B])(implicit prepend : Prepend[B, A]): RuleOutput[Prepend[B, A]#Out]
-  def parse(tokens: Seq[Token]): RuleOutput[Prepend[HNil, A]#Out] = parse(Matched[HNil](HNil, tokens))
+case class RuleOr[A](left: Rule[A], right: Rule[A]) extends Rule[A] {
+  override def parse[Z >: A](remaining: Seq[Token]): Seq[Parsed[A]] = left.parse(remaining) ++ right.parse(remaining)
+}
+
+trait Rule[+A] {
+  def parse[B >: A](remaining: Seq[Token]): Seq[Parsed[B]]
+}
+
+object Rule {
+  implicit class ImplicitCat[A](r0: Rule[A]) {
+    def *[B](r1: => Rule[B]) = new Concat1(r0, r1)
+  }
+
+  implicit class ImplicitOr[+A](r0: Rule[A]) {
+    def |[Z >: A](r1: Rule[Z]): Rule[Z] = RuleOr(r0, r1)
+  }
 }
 
 object Arithmetic {
+  import Rule._
+  trait Expression
+
   case class NumToken(x: Int) extends Token
-  case object OperatorToken extends Token
 
-  sealed trait Expression extends Tree
-  case class Operation(op: Operator, x: Expression, y: Expression) extends Expression
-  case class Operator(op: Char) extends Tree
-  case class Num(num: Int) extends Expression
+  case class Num(x: Int) extends Expression
+  case class Nums(exp1: Num, exp: Expression) extends Expression
 
-  object NumRule extends Rule[::[Num, HNil]] {
-     def parse[B <: HList](parseMe: Matched[B])(implicit prepend : Prepend[B, ::[Num , HNil]]): RuleOutput[Prepend[B, ::[Num , HNil]]#Out] = parseMe.remaining match {
-      case NumToken(x) +: tail =>
-        val z: Prepend[B, ::[Num , HNil]]#Out = parseMe.parsed ++ (Num(x) :: HNil)
-        RuleOutput(Seq(Matched(z, tail)))
-      case _ => RuleOutput(Seq.empty)
+  object NumAxiom extends Rule[Num] {
+    override def parse[B >: Num](remaining: Seq[Token]): Seq[Parsed[Num]] = remaining.headOption match {
+      case Some(NumToken(n)) => Seq(Parsed[Num](Num(n), remaining.tail))
+      case _ => Seq.empty
     }
   }
 
-//  object OperatorRule extends Rule {
-//    override def parse(matched: Matched): RuleOutput = matched.remaining match {
-//      case OperatorToken :: tail => Matches(Matched(matched.parsed :+ Operator('+'), tail) :: Nil)
-//      case _ => Unmatched
-//    }
-//  }
-
-  lazy val expressionRule: Rule = NumRule * expressionRule > identity | NumRule
+  lazy val numsRule: Rule[Expression] = NumAxiom * numsRule > Nums | NumAxiom
 
 }
 
-object Main {
-  import Arithmetic._
-  def main(args: Array[String]) = {
-    println("start")
-//    println(expressionRule)
-    val tokens = Seq(NumToken(1), OperatorToken, NumToken(2))
-    val parsed = expressionRule.parse(tokens)
-    println(parsed)
-  }
-}
+
