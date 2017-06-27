@@ -1,4 +1,4 @@
-package parse
+package org.peterc.srdp
 
 trait Token
 

@@ -1,4 +1,6 @@
-package parse
+package org.peterc.srdp.examples
+
+import org.peterc.srdp.{Parsed, Rule, Token}
 
 object ArithmeticParser {
   import Rule._
@@ -9,6 +11,7 @@ object ArithmeticParser {
   case class Num(x: Int) extends Expression
   case class Nums(exp1: Num, exp: Expression) extends Expression
   case class ThreeNums(x: Num, y: Num, z: Num) extends Expression
+  case class FiveNums(a: Num, b: Num, c: Num, d: Num, e: Num) extends Expression
   case class TwoNums(x: Num, y: Num) extends Expression
 
   object NumAxiom extends Rule[Num] {
@@ -18,6 +21,5 @@ object ArithmeticParser {
     }
   }
 
-  lazy val numsRule: Rule[Expression] = NumAxiom * NumAxiom > TwoNums
-  lazy val numsRule2: Rule[Expression] = NumAxiom * NumAxiom * NumAxiom > ThreeNums
+  lazy val numsRule5: Rule[Expression] = NumAxiom * NumAxiom * NumAxiom * NumAxiom * NumAxiom > FiveNums
 }
