@@ -40,7 +40,7 @@ object Tokenizer {
     tokenize(Tokenized(string, Seq.empty), tokenizers).toSeq.flatMap(_.tokens)
   }
 
-  def tokenize(tokenized: Tokenized, tokenizers: Set[Tokenizer]): Option[Tokenized] = {
+  private def tokenize(tokenized: Tokenized, tokenizers: Set[Tokenizer]): Option[Tokenized] = {
     val remaining = tokenized.remaining
     if (remaining.isEmpty)
       Some(tokenized)
@@ -50,7 +50,7 @@ object Tokenizer {
     } yield result
   }
 
-  def tokenizeOnce(tokenized: Tokenized, tokenizers: Set[Tokenizer]): Option[Tokenized] = {
+  private def tokenizeOnce(tokenized: Tokenized, tokenizers: Set[Tokenizer]): Option[Tokenized] = {
     val remaining = tokenized.remaining
     val previousTokens = tokenized.tokens
     val matches: Set[Tokenized] = for {

@@ -81,3 +81,12 @@ object ArithmeticRules {
     numberAxiom
 }
 
+object Arithmetic {
+  import ArithmeticRules._
+
+  implicit class StringArithmetic(val sc: StringContext) extends AnyVal {
+    def eval(args: Any*): Option[Int] = {
+      expressionRule.fullyParsed(Tokenizer.tokenizeWithWhitespace(sc.raw(args:_*).toString, ArithmeticTokens.tokenizers)).map(_.evaluate)
+    }
+  }
+}
