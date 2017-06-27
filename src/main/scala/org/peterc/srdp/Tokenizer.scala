@@ -3,9 +3,19 @@ package org.peterc.srdp
 import scala.annotation.tailrec
 import scala.util.matching.Regex
 
-case class Tokenizer()
+trait Token[+A] {
+  def value: A
+}
+
+trait TokenUnit extends Token[Unit] {
+  override def value = ()
+}
 
 object Tokenizer {
+
+  case object WhitespaceToken extends TokenUnit
+
+  val whiteSpaceTokenizer = WhitespaceToken.tokenizer("\\s".r)
 
   implicit class ImplicitTokenizer[A](a: Token[A]) {
     def tokenizer(regex: Regex): Tokenizer = (regex, _ => a)
@@ -19,6 +29,13 @@ object Tokenizer {
 
   case class Tokenized(remaining: String, tokens: Seq[Token[_]])
 
+  def tokenizeWithWhitespace(string: String, tokenizers: Set[Tokenizer]): Seq[Token[_]] = {
+    tokenize(string, tokenizers + whiteSpaceTokenizer).filter {
+      case WhitespaceToken => false
+      case _ => true
+    }
+  }
+
   def tokenize(string: String, tokenizers: Set[Tokenizer]): Seq[Token[_]] = {
     tokenize(Tokenized(string, Seq.empty), tokenizers).toSeq.flatMap(_.tokens)
   }
@@ -28,20 +45,20 @@ object Tokenizer {
     if (remaining.isEmpty)
       Some(tokenized)
     else for {
-      tokenized <- tokenizeOnce(tokenized, tokenizers)
-      result <- tokenize(tokenized, tokenizers)
+      tokenizedOnce <- tokenizeOnce(tokenized, tokenizers)
+      result <- tokenize(tokenizedOnce, tokenizers)
     } yield result
   }
 
   def tokenizeOnce(tokenized: Tokenized, tokenizers: Set[Tokenizer]): Option[Tokenized] = {
     val remaining = tokenized.remaining
     val previousTokens = tokenized.tokens
-    val matches = tokenizers.flatMap { tokenizer =>
-//      println(tokenizer._1.findPrefixOf(remaining))
-      tokenizer._1.findPrefixOf(remaining).map { prefix =>
-        Tokenized(remaining.substring(prefix.length), previousTokens :+ tokenizer._2(prefix))
-      }
+    val matches: Set[Tokenized] = for {
+      tokenizer <- tokenizers
+      prefix <- tokenizer._1.findPrefixOf(remaining)
+    } yield {
+      Tokenized(remaining.substring(prefix.length), previousTokens :+ tokenizer._2(prefix))
     }
-    matches.headOption.map(_ => matches.reduce((a,b) => if (a.remaining.length < b.remaining.length) a else b))
+    matches.reduceOption((a,b) => if (a.remaining.length < b.remaining.length) a else b)
   }
 }

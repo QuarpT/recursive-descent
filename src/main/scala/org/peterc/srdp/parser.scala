@@ -1,12 +1,5 @@
 package org.peterc.srdp
 
-trait Token[+A] {
-  def value: A
-}
-
-trait TokenUnit extends Token[Unit] {
-  override def value = ()
-}
 
 case class Parsed[+A](parsed: A, remaining: Seq[Token[_]])
 

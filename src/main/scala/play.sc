@@ -6,5 +6,5 @@ import org.peterc.srdp.examples.arithmetic.ArithmeticRules._
 import org.peterc.srdp.examples.arithmetic.ArithmeticTokens._
 
 
-val tokens = Tokenizer.tokenize("(100*20)/(4/2)", ArithmeticTokens.tokenizers)
+val tokens = Tokenizer.tokenizeWithWhitespace("1000 / 3 ", ArithmeticTokens.tokenizers)
 val r = expressionRule.fullyParsed(tokens).map(_.evaluate)
