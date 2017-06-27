@@ -1,10 +1,11 @@
 
-import org.peterc.srdp.examples.ArithmeticParser
 import org.peterc.srdp.examples._
-import ArithmeticParser._
 import org.peterc.srdp.Parsed
+import org.peterc.srdp.examples.arithmetic.ArithmeticRules
+import org.peterc.srdp.examples.arithmetic.ArithmeticRules._
+import org.peterc.srdp.examples.arithmetic.ArithmeticTokens._
 
-val tokens = Seq(NumToken(1), NumToken(2), NumToken(3), NumToken(4), NumToken(5))
+val tokens = Seq(OpenBracketToken, NumberToken(5), OperatorToken('+'), NumberToken(14), CloseBracketToken)
 
-val r: Seq[Parsed[Expression]] = numsRule5.parse(tokens)
+val r = expressionRule.fullyParsed(tokens).map(_.evaluate)
 
