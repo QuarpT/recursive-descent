@@ -76,7 +76,7 @@ object ArithmeticRules {
 
   lazy val expressionRule: Rule[Expression] =
     bracketRule |
-    bracketRule * operatorAxiom * expressionRule > BinaryOperation
+    bracketRule * operatorAxiom * expressionRule > BinaryOperation |
     numberAxiom * operatorAxiom * expressionRule > BinaryOperation |
     numberAxiom
 }
