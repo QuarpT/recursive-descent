@@ -19,6 +19,9 @@ trait Rule[+A] {
   def fullyParsed(remaining: Seq[Token[_]]): Option[A] = {
     parse(remaining).find(_.remaining.isEmpty).map(_.parsed)
   }
+  def fullyParsedAll(remaining: Seq[Token[_]]): Seq[A] = {
+    parse(remaining).filter(_.remaining.isEmpty).map(_.parsed)
+  }
 }
 
 object Rule {
