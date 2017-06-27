@@ -1,13 +1,25 @@
 package org.peterc.srdp.examples.arithmetic
 
 import org.peterc.srdp._
+import org.peterc.srdp.examples.arithmetic.ArithmeticTokens.NumberToken
+
+import scala.util.matching.Regex
 
 object ArithmeticTokens {
+  import Tokenizer._
+
   case class NumberToken(value: Int) extends Token[Int]
   case class OperatorToken(value: Char) extends Token[Char]
 
   case object OpenBracketToken extends TokenUnit
   case object CloseBracketToken extends TokenUnit
+
+  val tokenizers: Set[Tokenizer] = Set(
+    OpenBracketToken.tokenizer("\\(".r),
+    CloseBracketToken.tokenizer("\\)".r),
+    NumberToken.tokenizer("[0-9]+".r, _.toInt),
+    OperatorToken.tokenizer("\\+|\\-|/|\\*".r, _.head)
+  )
 }
 
 object ArithmeticRules {
@@ -31,12 +43,12 @@ object ArithmeticRules {
     override def evaluate: Int = expression.evaluate
   }
 
-  case class OperatorExpression(number: Number, operator: Operator, expression: Expression) extends Expression {
+  case class BinaryOperation(ex1: Expression, operator: Operator, ex2: Expression) extends Expression {
     override def evaluate: Int = operator.o match {
-      case '+' => number.evaluate + expression.evaluate
-      case '-' => number.evaluate - expression.evaluate
-      case '*' => number.evaluate * expression.evaluate
-      case _ => number.evaluate / expression.evaluate
+      case '+' => ex1.evaluate + ex2.evaluate
+      case '-' => ex1.evaluate - ex2.evaluate
+      case '*' => ex1.evaluate * ex2.evaluate
+      case _ => ex1.evaluate / ex2.evaluate
     }
   }
 
@@ -60,9 +72,12 @@ object ArithmeticRules {
 
  // RULES
 
+  lazy val bracketRule: Rule[Expression] = openBracketAxiom * expressionRule * closeBracketAxiom > BracketExpression
+
   lazy val expressionRule: Rule[Expression] =
-    openBracketAxiom * expressionRule * closeBracketAxiom > BracketExpression |
-    numberAxiom * operatorAxiom * expressionRule > OperatorExpression |
+    bracketRule |
+    bracketRule * operatorAxiom * expressionRule > BinaryOperation
+    numberAxiom * operatorAxiom * expressionRule > BinaryOperation |
     numberAxiom
 }
 
