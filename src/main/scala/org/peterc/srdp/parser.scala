@@ -27,7 +27,7 @@ trait Rule[+A] {
 
 object Rule {
   implicit class ImplicitCat[A](r0: Rule[A]) {
-    def *[B](r1: => Rule[B]) = new Concat1(r0, r1)
+    def *[B](r1: => Rule[B]): Concat1[A, B] = new Concat1(r0, r1)
   }
 
   implicit class ImplicitOr[+A](r0: Rule[A]) {

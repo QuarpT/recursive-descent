@@ -1,6 +1,7 @@
 package org.peterc.srdp.examples.arithmetic
 
 import org.peterc.srdp.Tokenizer._
+import org.peterc.srdp.Axiom._
 import org.peterc.srdp._
 
 object ArithmeticRules {
@@ -17,33 +18,24 @@ object ArithmeticRules {
   // AST
 
   sealed trait Expression
-
   case class Operator(value: Char) extends Token[Char]
   sealed trait OpenBracket
   case object OpenBracket extends TokenUnit with OpenBracket
   sealed trait CloseBracket
   case object CloseBracket extends TokenUnit with CloseBracket
-
   case class Number(value: Int) extends Token[Int] with Expression
   case class BracketExpression(openBracket: OpenBracket, expression: Expression, closeBracket: CloseBracket) extends Expression
   case class BinaryOperation(ex1: Expression, operator: Operator, ex2: Expression) extends Expression
 
-  // AXIOMS
-
-  val numberAxiom = Axiom[Number]
-  val operatorAxiom = Axiom[Operator]
-  val openBracketAxiom = Axiom[OpenBracket]
-  val closeBracketAxiom = Axiom[CloseBracket]
-
  // RULES
 
-  lazy val bracketRule: Rule[Expression] = openBracketAxiom * expressionRule * closeBracketAxiom > BracketExpression
+  lazy val bracketRule: Rule[Expression] = Axiom[OpenBracket] * expressionRule * Axiom[CloseBracket] > BracketExpression
 
   lazy val expressionRule: Rule[Expression] =
     bracketRule |
-    bracketRule * operatorAxiom * expressionRule > BinaryOperation |
-    numberAxiom * operatorAxiom * expressionRule > BinaryOperation |
-    numberAxiom
+    bracketRule * Axiom[Operator] * expressionRule > BinaryOperation |
+    Axiom[Number] * Axiom[Operator] * expressionRule > BinaryOperation |
+    Axiom[Number]
 }
 
 object Arithmetic {
