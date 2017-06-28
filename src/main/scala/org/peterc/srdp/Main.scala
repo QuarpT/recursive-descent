@@ -6,5 +6,6 @@ import org.peterc.srdp.examples.arithmetic.Arithmetic._
 object Main {
   def main(str: Array[String]) = {
     println(eval"1+2")
+    println(eval"((100 + 300) / (4 * 25)) - 2")
   }
 }

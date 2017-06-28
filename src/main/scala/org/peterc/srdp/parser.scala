@@ -1,9 +1,8 @@
 package org.peterc.srdp
 
 import org.peterc.srdp.Tokenizer.Tokenizer
-
-import scala.reflect.ClassTag
-
+import shapeless.Typeable
+import shapeless.syntax.typeable._
 
 case class Parsed[+A](parsed: A, remaining: Seq[Token[_]])
 
@@ -35,20 +34,21 @@ object Rule {
   }
 }
 
-class Axiom[A : ClassTag] extends Rule[A] {
-  // I don't like this but it enables the API to have nice syntax for generating Axioms
-  val clazz = implicitly[ClassTag[A]].runtimeClass
+class Axiom[A](implicit castU : Typeable[A]) extends Rule[A] {
 
   override def parse[B >: A](remaining: Seq[Token[_]]): Seq[Parsed[B]] = {
-    remaining.headOption.flatMap {
-      case h if clazz.isInstance(h) => Some(Parsed(h.asInstanceOf[B], remaining.tail))
-      case _ => None
-    }.toSeq
+    val parsed = for {
+      head <- remaining.headOption
+      expectedToken <- head.cast[A]
+    } yield {
+      Parsed(expectedToken, remaining.tail)
+    }
+    parsed.toSeq
   }
 }
 
 object Axiom {
-  def apply[A: ClassTag]: Axiom[A] = new Axiom[A]
+  def apply[A](implicit castU : Typeable[A]): Axiom[A] = new Axiom[A]
 }
 
 
