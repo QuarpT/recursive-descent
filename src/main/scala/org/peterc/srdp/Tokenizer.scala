@@ -29,7 +29,7 @@ object Tokenizer {
 
   case class Tokenized(remaining: String, tokens: Seq[Token[_]])
 
-  def tokenizeWithWhitespace(string: String, tokenizers: Set[Tokenizer]): Seq[Token[_]] = {
+  def tokenizeNoWhitespace(string: String, tokenizers: Set[Tokenizer]): Seq[Token[_]] = {
     tokenize(string, tokenizers + whiteSpaceTokenizer).filter {
       case WhitespaceToken => false
       case _ => true

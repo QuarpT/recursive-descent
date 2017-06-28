@@ -1,5 +1,9 @@
 package org.peterc.srdp
 
+import org.peterc.srdp.Tokenizer.Tokenizer
+
+import scala.reflect.ClassTag
+
 
 case class Parsed[+A](parsed: A, remaining: Seq[Token[_]])
 
@@ -9,11 +13,15 @@ case class RuleOr[A](left: Rule[A], right: Rule[A]) extends Rule[A] {
 
 trait Rule[+A] {
   def parse[B >: A](remaining: Seq[Token[_]]): Seq[Parsed[B]]
-  def fullyParsed(remaining: Seq[Token[_]]): Option[A] = {
+  def fullyParse(remaining: Seq[Token[_]]): Option[A] = {
     parse(remaining).find(_.remaining.isEmpty).map(_.parsed)
   }
-  def fullyParsedAll(remaining: Seq[Token[_]]): Seq[A] = {
+  def fullyParseAll(remaining: Seq[Token[_]]): Seq[A] = {
     parse(remaining).filter(_.remaining.isEmpty).map(_.parsed)
+  }
+  def fullyParse(s: String, tokenizers: Set[Tokenizer]): Option[A] = {
+    val tokens = Tokenizer.tokenizeNoWhitespace(s, tokenizers)
+    fullyParse(tokens)
   }
 }
 
@@ -27,21 +35,20 @@ object Rule {
   }
 }
 
-case class Axiom[A,B](partial: PartialFunction[Token[_], B]) extends Rule[B] {
+class Axiom[A : ClassTag] extends Rule[A] {
+  // I don't like this but it enables the API to have nice syntax for generating Axioms
+  val clazz = implicitly[ClassTag[A]].runtimeClass
 
-  def optionPartial(token: Token[_]): Option[B] = {
-    partial.andThen(Some.apply).applyOrElse(token, {_: Any => None})
+  override def parse[B >: A](remaining: Seq[Token[_]]): Seq[Parsed[B]] = {
+    remaining.headOption.flatMap {
+      case h if clazz.isInstance(h) => Some(Parsed(h.asInstanceOf[B], remaining.tail))
+      case _ => None
+    }.toSeq
   }
+}
 
-  override def parse[C >: B](remaining: Seq[Token[_]]): Seq[Parsed[C]] = {
-    val parsed = for {
-      head <- remaining.headOption
-      parsed <- optionPartial(head)
-    } yield {
-      Parsed(parsed, remaining.tail)
-    }
-    parsed.toSeq
-  }
+object Axiom {
+  def apply[A: ClassTag]: Axiom[A] = new Axiom[A]
 }
 
 
