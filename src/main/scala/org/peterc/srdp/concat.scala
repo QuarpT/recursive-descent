@@ -1,5 +1,7 @@
 package org.peterc.srdp
 
+// Concat1 would suffice. To enable typesafe parsing to case classes of arbitrary sizes I've included ConcatXs up to X = 6.
+
 object RuleConcat {
   def applyNextRule[A, B, Y](prevRuleResults: Seq[Parsed[A]], nextRule: Rule[B], converter: (A, B) => Y): Seq[Parsed[Y]] = {
     for {
