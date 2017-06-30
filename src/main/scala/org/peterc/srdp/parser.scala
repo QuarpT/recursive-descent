@@ -1,6 +1,6 @@
 package org.peterc.srdp
 
-import org.peterc.srdp.Tokenizer.Tokenizer
+import org.peterc.srdp.Tokenizer.TokenCreation
 import shapeless.Typeable
 import shapeless.syntax.typeable._
 
@@ -18,7 +18,7 @@ trait Rule[+A] {
   def fullyParseAll(remaining: Seq[Token[_]]): Seq[A] = {
     parse(remaining).filter(_.remaining.isEmpty).map(_.parsed)
   }
-  def fullyParse(s: String, tokenizers: Set[Tokenizer]): Option[A] = {
+  def fullyParse(s: String, tokenizers: Set[TokenCreation]): Option[A] = {
     val tokens = Tokenizer.tokenizeNoWhitespace(s, tokenizers)
     fullyParse(tokens)
   }

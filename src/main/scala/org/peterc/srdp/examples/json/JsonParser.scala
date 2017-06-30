@@ -1,21 +1,24 @@
 package org.peterc.srdp.examples.json
 
 import org.peterc.srdp.Tokenizer._
+import org.peterc.srdp.Tokenizer.ImplicitExtractors._
 import org.peterc.srdp._
 import shapeless.Typeable
 import shapeless.syntax.typeable._
 
 object JsonRules {
 
-  val tokenizers: Set[Tokenizer] = Set(
-    Number.tokenizer("[0-9]+(\\.[0-9]+)?".r, BigDecimal.apply),
-    JsString.tokenizer("\"[^\"]*\"".r, s => s.substring(1, s.length - 1)),
-    OpenArrayBracket.tokenizer("\\[".r),
-    CloseArrayBracket.tokenizer("\\]".r),
-    OpenCurlyBracket.tokenizer("\\{".r),
-    CloseCurlyBracket.tokenizer("\\}".r),
-    Colon.tokenizer(":".r),
-    Comma.tokenizer(",".r)
+  //TOKENIZER
+
+  val tokenizers: Set[TokenCreation] = Set(
+    JsString.tokenizer("\"([^\"]*)\"".r),
+    Number.tokenizer("([0-9]+(\\.[0-9]+)?)".r),
+    OpenArrayBracket.tokenizer("(\\[)".r),
+    CloseArrayBracket.tokenizer("(\\])".r),
+    OpenCurlyBracket.tokenizer("(\\{)".r),
+    CloseCurlyBracket.tokenizer("(\\})".r),
+    Colon.tokenizer("(:)".r),
+    Comma.tokenizer("(,)".r)
   )
 
   // AST
@@ -81,7 +84,7 @@ object JsonRules {
 object Json {
   import JsonRules._
 
-  def apply[A](s: String)(implicit castU : Typeable[A]): Option[A] = {
+  def apply[A](s: String)(implicit castU: Typeable[A]): Option[A] = {
     for {
       parsed <- parse(s).map(toPrimitives)
       result <- parsed.cast[A]
@@ -89,7 +92,7 @@ object Json {
   }
 
   implicit class StringJson(val sc: StringContext) extends AnyVal {
-    def json[A](args: Any*)(implicit castU : Typeable[A]): Option[A] = {
+    def json[A](args: Any*)(implicit castU: Typeable[A]): Option[A] = {
       apply(sc.raw(args:_*).toString)
     }
   }
