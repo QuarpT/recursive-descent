@@ -9,5 +9,6 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "com.chuusai" %% "shapeless" % "2.3.2"
+  "com.chuusai" %% "shapeless" % "2.3.2",
+  "org.specs2" %% "specs2-core" % "3.9.1" % "test"
 )
