@@ -18,7 +18,7 @@ object Tokenizer {
 
   case object WhitespaceToken extends TokenUnit
 
-  val whiteSpaceTokenizer = WhitespaceToken.tokenizer("(\\s)".r)
+  val whiteSpaceTokenizer = WhitespaceToken.tokenizer("(\\s|\\n)".r)
 
   implicit class ImplicitTokenizer[A](a: Token[A]) {
     def tokenizer(regex: Regex): TokenCreation = TokenCreation(regex, _ => a)

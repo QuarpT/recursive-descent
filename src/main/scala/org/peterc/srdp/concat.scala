@@ -14,6 +14,12 @@ object RuleConcat {
   }
 }
 
+class RuleConcat0[A, Y](r0: Rule[A], converter: A => Y) extends Rule[Y] {
+  override def parse[Z >: Y](remaining: Seq[Token[_]]): Seq[Parsed[Z]] = {
+    r0.parse(remaining).map(parsed => Parsed(converter(parsed.parsed), parsed.remaining))
+  }
+}
+
 class RuleConcat1[A, B, Y](r0: Rule[A], r1: => Rule[B], converter: (A, B) => Y) extends Rule[Y] {
   override def parse[Z >: Y](remaining: Seq[Token[_]]): Seq[Parsed[Z]] = {
     RuleConcat.applyNextRule(r0.parse(remaining), r1, converter)
