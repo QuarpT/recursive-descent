@@ -5,7 +5,7 @@ By defining Axioms and Rules it is possible to quickly parse strings into abstra
 
 ### Examples
 
-Examples in [org.peterc.rdescent.examples].
+Examples in [README](org.peterc.rdescent.examples).
 Examples include an Arithmetic and Json parser.
 
 This README uses extracts from the Arithmetic parser to provide an overview.
