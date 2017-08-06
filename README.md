@@ -1,7 +1,7 @@
 # Recursive Descent
 
 Recursive Descent is a Scala typed recursive descent parser DSL.
-By defining Axioms and rules it is possible to quickly parse strings in abstract syntax trees.
+By defining Axioms and Rules it is possible to quickly parse strings into abstract syntax trees.
 
 ### Examples
 
