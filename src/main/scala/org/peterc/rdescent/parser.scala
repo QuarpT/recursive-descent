@@ -1,6 +1,6 @@
-package org.peterc.srdp
+package org.peterc.rdescent
 
-import org.peterc.srdp.tokenizer.Tokenizer
+import org.peterc.rdescent.tokenizer.Tokenizer
 import shapeless.Typeable
 import shapeless.syntax.typeable._
 

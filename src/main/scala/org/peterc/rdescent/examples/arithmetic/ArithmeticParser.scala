@@ -1,8 +1,8 @@
-package org.peterc.srdp.examples.arithmetic
+package org.peterc.rdescent.examples.arithmetic
 
-import org.peterc.srdp.tokenizer.implicits._
-import org.peterc.srdp.tokenizer._
-import org.peterc.srdp._
+import org.peterc.rdescent.tokenizer.implicits._
+import org.peterc.rdescent.tokenizer._
+import org.peterc.rdescent._
 
 object ArithmeticRules {
 

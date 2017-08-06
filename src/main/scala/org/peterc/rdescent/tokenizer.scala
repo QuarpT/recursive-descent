@@ -1,4 +1,4 @@
-package org.peterc.srdp
+package org.peterc.rdescent
 
 import scala.util.matching.Regex
 

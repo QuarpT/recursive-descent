@@ -1,8 +1,8 @@
-package org.peterc.srdp.examples.json
+package org.peterc.rdescent.examples.json
 
-import org.peterc.srdp.tokenizer._
-import org.peterc.srdp.tokenizer.implicits._
-import org.peterc.srdp._
+import org.peterc.rdescent.tokenizer._
+import org.peterc.rdescent.tokenizer.implicits._
+import org.peterc.rdescent._
 import shapeless.Typeable
 import shapeless.syntax.typeable._
 

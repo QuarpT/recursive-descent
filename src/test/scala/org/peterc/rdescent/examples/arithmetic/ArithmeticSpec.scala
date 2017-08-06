@@ -1,7 +1,7 @@
-package org.peterc.srdp.examples.arithmetic
+package org.peterc.rdescent.examples.arithmetic
 
 import org.specs2.mutable.Specification
-import org.peterc.srdp.examples.arithmetic.Arithmetic._
+import org.peterc.rdescent.examples.arithmetic.Arithmetic._
 
 class ArithmeticSpec extends Specification {
 

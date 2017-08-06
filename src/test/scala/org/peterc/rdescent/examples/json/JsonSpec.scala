@@ -1,7 +1,7 @@
-package org.peterc.srdp.examples.json
+package org.peterc.rdescent.examples.json
 
 import org.specs2.mutable.Specification
-import org.peterc.srdp.examples.json.JsonRules._
+import org.peterc.rdescent.examples.json.JsonRules._
 
 class JsonSpec extends Specification {
   "Json parsing" should {

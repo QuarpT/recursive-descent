@@ -1,18 +1,21 @@
-# Scala Typed Recursive Descent Parser DSL
+# Recursive Descent
+
+Recursive Descent is a Scala typed recursive descent parser DSL.
+By defining Axioms and rules it is possible to quickly parse strings in abstract syntax trees.
 
 ### Examples
 
-Examples in org.peterc.srdp.examples.
+Examples in org.peterc.rdescent.examples.
 Examples include an Arithmetic and Json parser.
 
 This README uses extracts from the Arithmetic parser to provide an overview.
 
 ### Tokenizing
 
-Tokenizing is preliminary step by the used by the parser.
-You will need to create a Set of Tokenizers using the DSL.
+Tokenizing is preliminary step the used by the parser.
+You will need to create a set of Tokenizers using the DSL.
 A Token should be a case object or a case class that wraps one of the primitive types below.
-The Tokens also represent your grammar's axioms.
+Tokens you define also represent your grammar's axioms.
 You can quickly create Tokenizers using the API for types:
 
 * String

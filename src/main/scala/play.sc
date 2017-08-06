@@ -1,7 +1,7 @@
 
-import org.peterc.srdp.examples.arithmetic.Arithmetic._
-import org.peterc.srdp.examples.json.{Json, JsonRules}
-import org.peterc.srdp.examples.json.Json._
+import org.peterc.rdescent.examples.arithmetic.Arithmetic._
+import org.peterc.rdescent.examples.json.{Json, JsonRules}
+import org.peterc.rdescent.examples.json.Json._
 
 eval"50 - 1"
 eval"((100 + 300) / (4 * 25)) - 1"
