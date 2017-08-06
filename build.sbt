@@ -1,4 +1,4 @@
-name := "parsing"
+name := "Recursive Descent"
 
 version := "1.0"
 
