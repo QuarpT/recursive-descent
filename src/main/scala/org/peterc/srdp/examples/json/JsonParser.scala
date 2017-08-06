@@ -1,7 +1,7 @@
 package org.peterc.srdp.examples.json
 
-import org.peterc.srdp.Tokenizer._
-import org.peterc.srdp.Tokenizer.ImplicitExtractors._
+import org.peterc.srdp.tokenizer._
+import org.peterc.srdp.tokenizer.implicits._
 import org.peterc.srdp._
 import shapeless.Typeable
 import shapeless.syntax.typeable._
@@ -10,15 +10,15 @@ object JsonRules {
 
   //TOKENIZER
 
-  val tokenizers: Set[TokenCreation] = Set(
-    JsString.tokenizer("\"([^\"]*)\"".r),
-    JsNumber.tokenizer("([0-9]+(\\.[0-9]+)?)".r),
-    OpenArrayBracket.tokenizer("(\\[)".r),
-    CloseArrayBracket.tokenizer("(\\])".r),
-    OpenCurlyBracket.tokenizer("(\\{)".r),
-    CloseCurlyBracket.tokenizer("(\\})".r),
-    Colon.tokenizer("(:)".r),
-    Comma.tokenizer("(,)".r)
+  val tokenizers: Set[Tokenizer] = Set(
+    JsString.tokenizer("\"([^\"]*)\"".r, 1),
+    JsNumber.tokenizer("[0-9]+(\\.[0-9]+)?".r),
+    OpenArrayBracket.tokenizer("\\[".r),
+    CloseArrayBracket.tokenizer("\\]".r),
+    OpenCurlyBracket.tokenizer("\\{".r),
+    CloseCurlyBracket.tokenizer("\\}".r),
+    Colon.tokenizer(":".r),
+    Comma.tokenizer(",".r)
   )
 
   // AST

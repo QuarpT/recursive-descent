@@ -1,18 +1,18 @@
 package org.peterc.srdp.examples.arithmetic
 
-import org.peterc.srdp.Tokenizer.ImplicitExtractors._
-import org.peterc.srdp.Tokenizer._
+import org.peterc.srdp.tokenizer.implicits._
+import org.peterc.srdp.tokenizer._
 import org.peterc.srdp._
 
 object ArithmeticRules {
 
   // TOKENIZERS
 
-  val tokenizers: Set[TokenCreation] = Set(
-    OpenBracket.tokenizer("(\\()".r),
-    CloseBracket.tokenizer("(\\))".r),
-    Number.tokenizer("([0-9]+)".r),
-    Operator.tokenizer("(\\+|\\-|/|\\*)".r)
+  val tokenizers: Set[Tokenizer] = Set(
+    OpenBracket.tokenizer("\\(".r),
+    CloseBracket.tokenizer("\\)".r),
+    Number.tokenizer("[0-9]+".r),
+    Operator.tokenizer("\\+|\\-|/|\\*".r)
   )
 
   // AST

@@ -14,22 +14,25 @@ trait TokenValueExtractor[T] {
   def extract(s: String): T
 }
 
-object Tokenizer {
-
+object tokenizer {
+  import implicits._
   case object WhitespaceToken extends TokenUnit
 
   val whiteSpaceTokenizer = WhitespaceToken.tokenizer("(\\s|\\n)".r)
 
-  implicit class ImplicitTokenizer[A](a: Token[A]) {
-    def tokenizer(regex: Regex): TokenCreation = TokenCreation(regex, _ => a)
-  }
+  object implicits {
 
-  implicit class ImplicitTokenizerF[A](a: A => Token[A]) {
-    def tokenizer(regex: Regex, toTokenValue: String => A): TokenCreation = TokenCreation(regex, { s => a(toTokenValue(s))})
-    def tokenizer(regex: Regex)(implicit extractor: TokenValueExtractor[A]): TokenCreation = TokenCreation(regex, { s: String => a(extractor.extract(s))})
-  }
+    implicit class ImplicitTokenizer[A](a: Token[A]) {
+      def tokenizer(regex: Regex, group: Int = 0): Tokenizer = Tokenizer(regex, _ => a, group)
+    }
 
-  object ImplicitExtractors {
+    implicit class ImplicitTokenizerFun[A](a: A => Token[A]) {
+      def tokenizer(regex: Regex, toTokenValue: String => A): Tokenizer = Tokenizer(regex, s => a(toTokenValue(s)), 0)
+      def tokenizer(regex: Regex, toTokenValue: String => A, group: Int): Tokenizer = Tokenizer(regex, s => a(toTokenValue(s)), group)
+      def tokenizer(regex: Regex)(implicit extractor: TokenValueExtractor[A]): Tokenizer = Tokenizer(regex, s => a(extractor.extract(s)), 0)
+      def tokenizer(regex: Regex, group: Int)(implicit extractor: TokenValueExtractor[A]): Tokenizer = Tokenizer(regex, s => a(extractor.extract(s)), group)
+    }
+
     implicit object StringTokenExtractor extends TokenValueExtractor[String] {
       override def extract(s: String): String = s
     }
@@ -50,22 +53,22 @@ object Tokenizer {
     }
   }
 
-  case class TokenCreation(regex: Regex, create: String => Token[_])
+  case class Tokenizer(regex: Regex, create: String => Token[_], group: Int)
 
   case class Tokenized(remaining: String, tokens: Seq[Token[_]])
 
-  def tokenizeNoWhitespace(string: String, tokenizers: Set[TokenCreation]): Seq[Token[_]] = {
+  def tokenizeNoWhitespace(string: String, tokenizers: Set[Tokenizer]): Seq[Token[_]] = {
     tokenize(string, tokenizers + whiteSpaceTokenizer).filter {
       case WhitespaceToken => false
       case _ => true
     }
   }
 
-  def tokenize(string: String, tokenizers: Set[TokenCreation]): Seq[Token[_]] = {
+  def tokenize(string: String, tokenizers: Set[Tokenizer]): Seq[Token[_]] = {
     tokenize(Tokenized(string, Seq.empty), tokenizers).toSeq.flatMap(_.tokens)
   }
 
-  private def tokenize(tokenized: Tokenized, tokenizers: Set[TokenCreation]): Option[Tokenized] = {
+  private def tokenize(tokenized: Tokenized, tokenizers: Set[Tokenizer]): Option[Tokenized] = {
     val remaining = tokenized.remaining
     if (remaining.isEmpty)
       Some(tokenized)
@@ -75,14 +78,14 @@ object Tokenizer {
     } yield result
   }
 
-  private def tokenizeOnce(tokenized: Tokenized, tokenizers: Set[TokenCreation]): Option[Tokenized] = {
+  private def tokenizeOnce(tokenized: Tokenized, tokenizers: Set[Tokenizer]): Option[Tokenized] = {
     val remaining = tokenized.remaining
     val previousTokens = tokenized.tokens
     val matches: Set[Tokenized] = for {
       tokenCreation <- tokenizers
       prefix <- tokenCreation.regex.findPrefixMatchOf(remaining)
     } yield {
-      Tokenized(remaining.substring(prefix.matched.length), previousTokens :+ tokenCreation.create(prefix.group(1)))
+      Tokenized(remaining.substring(prefix.matched.length), previousTokens :+ tokenCreation.create(prefix.group(tokenCreation.group)))
     }
     matches.reduceOption((a,b) => if (a.remaining.length < b.remaining.length) a else b)
   }
