@@ -80,7 +80,7 @@ lazy val expressionRule: Rule[Expression] =
 
 Retrieve the parsed expression:
 ```scala
-val expression: Expression = expressionRule.fullyParse(s, tokenizers)
+val expression: Option[Expression] = expressionRule.fullyParse(s, tokenizers)
 ```
 
 ### Evaluation
