@@ -1,7 +1,7 @@
 # Recursive Descent
 
-Recursive Descent is a Scala typed recursive descent parser DSL.
-By defining Axioms and Rules it is possible to quickly parse strings into abstract syntax trees.
+Recursive Descent is a Scala, type safe, recursive descent parser.
+By defining Axioms and Rules it's possible to quickly parse strings into abstract syntax trees.
 
 ### Examples
 
@@ -18,12 +18,7 @@ A Token should be a case object or a case class that wraps one of the primitive 
 Tokens you define also represent your grammar's axioms.
 You can quickly create Tokenizers using the API for types:
 
-* String
-* BigDecimal
-* BigInt
-* Int
-* Double
-* Char
+String, BigDecimal, BigInt, Int, Double, Char
 
 Define your Tokens:
 
